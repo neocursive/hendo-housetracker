@@ -1,0 +1,4 @@
+# Never upload environment variables to GitHub!
+.env
+__pycache__/
+*.pyc
