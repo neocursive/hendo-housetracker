@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ trip.store_name }} - Trip Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; background: #28a745; color: white; border: none; cursor: pointer; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; }
+        .item-list { margin-top: 30px; }
+        
+        .receipt-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .item-details { display: flex; flex-direction: column; }
+        
+        /* Styling for our tags and filters */
+        .tag-pill { background: #e9ecef; color: #495057; font-size: 11px; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-top: 4px; align-self: flex-start; }
+        .filters { margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .filter-btn { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; margin: 2px; }
+        .filter-btn:hover, .filter-btn.active { background: #343a40; }
+        
+        .price-and-btn { display: flex; align-items: center; gap: 10px; }
+        .price { font-weight: bold; color: #333; }
+        .delete-btn { background: #dc3545; padding: 4px 8px; font-size: 12px; border-radius: 3px; color: white; }
+        .edit-btn { background: #ffc107; padding: 4px 8px; font-size: 12px; border-radius: 3px; color: #333; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="back-link">&larr; Back to All Trips</a>
+
+    <h1>{{ trip.store_name }}</h1>
+    <p>Date: {{ trip.trip_date }}</p>
+    <hr>
+
+    <h3>Add an Item</h3>
+    <form method="POST" action="/trip/{{ trip.id }}">
+        <div class="form-group">
+            <label for="item_name">Item Name:</label>
+            <input type="text" id="item_name" name="item_name" placeholder="e.g., Milk" required>
+        </div>
+        
+        <!-- The Tag Box (Text input + Datalist) -->
+        <div class="form-group">
+            <label for="category">Tag / Category:</label>
+            <input type="text" id="category" name="category" placeholder="Type a tag... e.g. Produce" list="tag-suggestions">
+            <datalist id="tag-suggestions">
+                {% for tag in unique_tags %}
+                    <option value="{{ tag }}">
+                {% endfor %}
+            </datalist>
+        </div>
+        
+        <div class="form-group">
+            <label for="price">Price ($):</label>
+            <input type="number" step="0.01" id="price" name="price" placeholder="e.g., 3.99" required>
+        </div>
+        <button type="submit">Add Item</button>
+    </form>
+
+    <div class="item-list">
+        <h2>Receipt</h2>
+        
+        <!-- The Live Filter Bar -->
+        {% if unique_tags %}
+        <div class="filters">
+            <strong>Filter by Tag:</strong>
+            <button class="filter-btn active" onclick="filterItems('All')">All</button>
+            {% for tag in unique_tags %}
+                <button class="filter-btn" onclick="filterItems('{{ tag }}')">{{ tag }}</button>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <ul>
+            {% for item in trip.items %}
+                <!-- Added data-tag and data-price attributes so JavaScript can read them -->
+                <li class="receipt-item" data-tag="{{ item.category or 'Untagged' }}" data-price="{{ item.price }}">
+                    <div class="item-details">
+                        <span>{{ item.item_name }}</span>
+                        {% if item.category %}
+                            <span class="tag-pill">{{ item.category }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="price-and-btn">
+                        <span class="price">${{ '%.2f'|format(item.price) }}</span>
+                        <a href="/edit-item/{{ item.id }}" class="edit-btn">Edit</a>
+                        <form method="POST" action="/delete-item/{{ item.id }}" style="margin: 0;" onsubmit="return prompt('To delete {{ item.item_name }}, type its exact price ({{ '%.2f'|format(item.price) }}):') === '{{ '%.2f'|format(item.price) }}';">
+                            <button type="submit" class="delete-btn">X</button>
+                        </form>
+                    </div>
+                </li>
+            {% else %}
+                <li>No items added to this trip yet.</li>
+            {% endfor %}
+        </ul>
+        <hr>
+        <!-- Gave the total an ID so Javascript can dynamically update it -->
+        <h3 style="text-align: right;">Total: <span id="receipt-total">${{ '%.2f'|format(total) }}</span></h3>
+    </div>
+
+    <!-- JavaScript to handle the live filtering -->
+    <script>
+        function filterItems(selectedTag) {
+            let items = document.querySelectorAll('.receipt-item');
+            let newTotal = 0.0;
+
+            items.forEach(item => {
+                let itemTag = item.getAttribute('data-tag');
+                let itemPrice = parseFloat(item.getAttribute('data-price'));
+
+                if (selectedTag === 'All' || itemTag === selectedTag) {
+                    item.style.display = 'flex'; // Show it
+                    newTotal += itemPrice;       // Add to new total
+                } else {
+                    item.style.display = 'none'; // Hide it
+                }
+            });
+
+            // Update the math at the bottom
+            document.getElementById('receipt-total').innerText = '$' + newTotal.toFixed(2);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Trip</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; background: #ffc107; color: #333; border: none; cursor: pointer; font-weight: bold; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="back-link">&larr; Back to Dashboard</a>
+
+    <h2>Edit Trip Info</h2>
+    
+    <form method="POST" action="/edit-trip/{{ trip.id }}">
+        <div class="form-group">
+            <label for="store_name">Store Name:</label>
+            <input type="text" id="store_name" name="store_name" value="{{ trip.store_name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="trip_date">Date:</label>
+            <input type="date" id="trip_date" name="trip_date" value="{{ trip.trip_date }}" required>
+        </div>
+        
+        <button type="submit">Save Changes</button>
+    </form>
+
+</body>
+</html>

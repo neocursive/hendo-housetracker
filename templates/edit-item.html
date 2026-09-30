@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit {{ item.item_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; background: #ffc107; color: #333; border: none; font-weight: bold; cursor: pointer; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <a href="/trip/{{ item.trip_id }}" class="back-link">&larr; Back to Receipt</a>
+    <h2>Edit Item</h2>
+    
+    <form method="POST" action="/edit-item/{{ item.id }}">
+        <div class="form-group">
+            <label for="item_name">Item Name:</label>
+            <input type="text" id="item_name" name="item_name" value="{{ item.item_name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Tag / Category:</label>
+            <input type="text" id="category" name="category" value="{{ item.category or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="price">Price ($):</label>
+            <input type="number" step="0.01" id="price" name="price" value="{{ '%.2f'|format(item.price) }}" required>
+        </div>
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+</html>

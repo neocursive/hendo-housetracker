@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Household Grocery Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        button { padding: 10px 15px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        
+        /* New Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        th a { color: #333; text-decoration: none; display: block; }
+        th a:hover { text-decoration: underline; }
+        
+        .action-btns { display: flex; gap: 10px; }
+        .edit-btn { background: #ffc107; padding: 6px 10px; font-size: 12px; border-radius: 3px; color: #333; text-decoration: none; border: none; }
+        .delete-btn { background: #dc3545; padding: 6px 10px; font-size: 12px; border-radius: 3px; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h1>Grocery Tracker Dashboard</h1>
+    
+    <h3>Log a New Trip</h3>
+    <form method="POST" action="/">
+        <div class="form-group">
+            <label for="store_name">Store Name:</label>
+            <input type="text" id="store_name" name="store_name" placeholder="e.g., Trader Joe's" required>
+            
+            <label for="trip_date">Date:</label>
+            <input type="date" id="trip_date" name="trip_date" required>
+        </div>
+        <button type="submit">Start Trip</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <!-- Clickable Date Header for Sorting -->
+                <th>
+                    <a href="/?sort={{ 'asc' if current_sort == 'desc' else 'desc' }}">
+                        Date {{ '↓' if current_sort == 'desc' else '↑' }}
+                    </a>
+                </th>
+                <th>Store Name</th>
+                <th>Total Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trip in trips %}
+            <tr>
+                <td>{{ trip.trip_date }}</td>
+                <td><a href="/trip/{{ trip.id }}" style="font-weight: bold; color: #007bff;">{{ trip.store_name }}</a></td>
+                
+                <!-- Pulling the dynamically calculated total from our Python @property -->
+                <td>${{ '%.2f'|format(trip.total_cost) }}</td>
+                
+                <td class="action-btns">
+                    <a href="/edit-trip/{{ trip.id }}" class="edit-btn">Edit</a>
+                    
+                    <!-- Delete Safeguard requires full Store Name -->
+                    <form method="POST" action="/delete-trip/{{ trip.id }}" style="margin: 0;" onsubmit="return prompt('To delete this trip, type the exact store name ({{ trip.store_name }}):') === '{{ trip.store_name }}';">
+                        <button type="submit" class="delete-btn">X</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">No trips logged yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
